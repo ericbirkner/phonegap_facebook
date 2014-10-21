@@ -1,53 +1,55 @@
 <!DOCTYPE html>
-<html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html>
+<head>
     <meta charset="utf-8">
     <title>openFB Sample</title>
     <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
-    <link rel="stylesheet" href="http://coenraets.org/apps/openfb/ratchet.css">
-    <link rel="stylesheet" href="http://coenraets.org/apps/openfb/styles.css">
+    <link rel="stylesheet" href="css/ratchet.css">
+    <link rel="stylesheet" href="css/styles.css">
 </head>
-<body onload="onLoad()">
+<body>
 
 <button class="btn btn-block" onclick="login()">Login with Facebook</button>
-<hr>
+<hr/>
 
-<p>Name: <span id="userName"></span></p>
 <button class="btn btn-block" onclick="getInfo()">Get My Info</button>
-<hr>
+<p>Name: <span id="userName"></span></p>
+<img id="userPic"/>
+<hr/>
 
-<textarea id="Message" placeholder="What&#39;s on your mind?" rows="5"></textarea>
+<textarea id="Message" placeholder="What's on your mind?" rows="5"></textarea>
 <button class="btn btn-block" onclick="share()">Share</button>
-<hr>
+<hr/>
 
+<p>Complete Facebook Logout. After logging out, you'll have to login again and provide your Facebook credentials.</p>
+<button class="btn btn-block" onclick="logout()">Logout</button>
+<hr/>
+
+<p>Revoke App Permissions. After revoking permissions, you'll have to grant permissions again when logging in.</p>
 <button class="btn btn-block" onclick="revoke()">Revoke Permissions</button>
+
+<!--cordova.js is automatically injected by the Cordova build process-->
 <script src="cordova.js"></script>
+
 <script src="openfb.js"></script>
 
 <script>
-	
-	 function onLoad() {
-        document.addEventListener("deviceready", onDeviceReady, false);
-    }
 
-    // device APIs are available
-    //
-    function onDeviceReady() {
-        openFB.init('513402902060526','http://localhost/openfb/oauthcallback.html','e0e3f27029310f08ba1fd14bcc87af8c');
-    }
-	
      // Defaults to sessionStorage for storing the Facebook token
+     openFB.init({appId: '513402902060526'});
 
-//  Uncomment the line below to store the Facebook token in localStorage instead of sessionStorage
-//  openFB.init('YOUR_FB_APP_ID', 'http://localhost/openfb/oauthcallback.html', window.localStorage);
+    //  Uncomment the line below to store the Facebook token in localStorage instead of sessionStorage
+    //  openFB.init({appId: 'YOUR_FB_APP_ID', tokenStore: window.localStorage});
 
     function login() {
-        openFB.login('email',
-                function() {
-                    alert('Facebook login succeeded');
-                },
-                function() {
-                    alert('Facebook login failed');
-                });
+        openFB.login(
+                function(response) {
+                    if(response.status === 'connected') {
+                        alert('Facebook login succeeded, got access token: ' + response.authResponse.token);
+                    } else {
+                        alert('Facebook login failed: ' + response.error);
+                    }
+                }, {scope: 'email,read_stream,publish_stream'});
     }
 
     function getInfo() {
@@ -56,6 +58,7 @@
             success: function(data) {
                 console.log(JSON.stringify(data));
                 document.getElementById("userName").innerHTML = data.name;
+                document.getElementById("userPic").src = 'http://graph.facebook.com/' + data.id + '/picture?type=small';
             },
             error: errorHandler});
     }
@@ -65,9 +68,9 @@
             method: 'POST',
             path: '/me/feed',
             params: {
-                message: 'Testing Facebook APIs'
+                message: document.getElementById('Message').value || 'Testing Facebook APIs'
             },
-            success: function(data) {
+            success: function() {
                 alert('the item was posted on Facebook');
             },
             error: errorHandler});
@@ -81,10 +84,18 @@
                 errorHandler);
     }
 
+    function logout() {
+        openFB.logout(
+                function() {
+                    alert('Logout successful');
+                },
+                errorHandler);
+    }
+
     function errorHandler(error) {
         alert(error.message);
     }
 
 </script>
-
-<div id="window-resizer-tooltip"><a href="http://coenraets.org/apps/openfb/index.html#" title="Edit settings" style="background-image: url(chrome-extension://kkelicaakdanhinjdeammmilcgefonfh/images/icon_19.png);"></a><span class="tooltipTitle">Window size: </span><span class="tooltipWidth" id="winWidth"></span> x <span class="tooltipHeight" id="winHeight"></span><br><span class="tooltipTitle">Viewport size: </span><span class="tooltipWidth" id="vpWidth"></span> x <span class="tooltipHeight" id="vpHeight"></span></div></body></html>
+</body>
+</html>
