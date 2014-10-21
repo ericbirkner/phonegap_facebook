@@ -6,7 +6,7 @@
     <link rel="stylesheet" href="http://coenraets.org/apps/openfb/ratchet.css">
     <link rel="stylesheet" href="http://coenraets.org/apps/openfb/styles.css">
 </head>
-<body>
+<body onload="onLoad()">
 
 <button class="btn btn-block" onclick="login()">Login with Facebook</button>
 <hr>
@@ -20,12 +20,22 @@
 <hr>
 
 <button class="btn btn-block" onclick="revoke()">Revoke Permissions</button>
-
+<script src="cordova.js"></script>
 <script src="openfb.js"></script>
 
 <script>
+	
+	 function onLoad() {
+        document.addEventListener("deviceready", onDeviceReady, false);
+    }
 
-    openFB.init('513402902060526'); // Defaults to sessionStorage for storing the Facebook token
+    // device APIs are available
+    //
+    function onDeviceReady() {
+        openFB.init('513402902060526');
+    }
+	
+     // Defaults to sessionStorage for storing the Facebook token
 
 //  Uncomment the line below to store the Facebook token in localStorage instead of sessionStorage
 //  openFB.init('YOUR_FB_APP_ID', 'http://localhost/openfb/oauthcallback.html', window.localStorage);
